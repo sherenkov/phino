@@ -12,6 +12,7 @@ import CST
 import Control.Monad (forM_)
 import Data.Aeson
 import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
 import Data.Yaml qualified as Yaml
 import Encoding (Encoding (ASCII), withEncoding)
 import GHC.Generics (Generic)
@@ -88,7 +89,7 @@ spec = do
       ( \pth -> it (makeRelative resources pth) $ do
           pack <- cstPack pth
           prog <- parseProgramThrows (program pack)
-          render (withMargin defaultMargin (programToCST prog)) `shouldBe` result pack
+          render (withMargin defaultMargin (programToCST prog)) `shouldBe` TL.fromStrict (result pack)
       )
 
   describe "converts to salty CST" $ do
@@ -101,7 +102,7 @@ spec = do
           prog <- parseProgramThrows (program pack)
           let cst = programToCST prog
               salty = toSalty cst
-          render salty `shouldBe` result pack
+          render salty `shouldBe` TL.fromStrict (result pack)
       )
 
   describe "converts to ascii CST" $ do
@@ -114,7 +115,7 @@ spec = do
           prog <- parseProgramThrows (program pack)
           let cst = programToCST prog
               ascii = withMargin defaultMargin (withEncoding ASCII cst)
-          render ascii `shouldBe` result pack
+          render ascii `shouldBe` TL.fromStrict (result pack)
       )
 
   describe "converts to singleline CST" $ do
@@ -127,5 +128,5 @@ spec = do
           prog <- parseProgramThrows (program pack)
           let cst = programToCST prog
               ascii = withLineFormat SINGLELINE cst
-          render ascii `shouldBe` result pack
+          render ascii `shouldBe` TL.fromStrict (result pack)
       )

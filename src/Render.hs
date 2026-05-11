@@ -9,23 +9,27 @@
 module Render where
 
 import CST
-import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Text.Lazy (Text)
+import qualified Data.Text.Lazy as TL
 
 class Render a where
   render :: a -> Text
 
 instance Render String where
-  render = T.pack
+  render = TL.pack
+
+instance Render T.Text where
+  render = TL.fromStrict
 
 instance Render Text where
   render = id
 
 instance Render Int where
-  render = T.pack . show
+  render = TL.pack . show
 
 instance Render Char where
-  render = T.singleton
+  render = TL.singleton
 
 instance Render LCB where
   render LCB = "{"
@@ -100,7 +104,7 @@ instance Render DOTS where
 instance Render BYTES where
   render BT_EMPTY = "--"
   render (BT_ONE bte) = render bte <> "-"
-  render (BT_MANY bts) = T.intercalate "-" (map render bts)
+  render (BT_MANY bts) = TL.intercalate "-" (map render bts)
   render (BT_META mt) = render mt
 
 instance Render EXCLAMATION where
@@ -128,7 +132,7 @@ instance Render ALPHA where
   render ALPHA' = "~"
 
 instance Render TAB where
-  render TAB{..} = T.replicate indent "  "
+  render TAB{..} = TL.replicate (fromIntegral indent) "  "
   render TAB' = " "
   render NO_TAB = ""
 
@@ -181,14 +185,14 @@ instance Render EXPRESSION where
   render EX_APPLICATION_TAUS{..} = render expr <> render space <> "(" <> render eol <> render tab <> render taus <> render eol' <> render tab' <> ")"
   render EX_APPLICATION_EXPRS{..} = render expr <> render space <> "(" <> render eol <> render tab <> render args <> render eol' <> render tab' <> ")"
   render EX_STRING{..} = "\"" <> render str <> "\""
-  render EX_NUMBER{..} = either (T.pack . show) (T.pack . show) num
+  render EX_NUMBER{..} = either (TL.pack . show) (TL.pack . show) num
   render EX_META{..} = render meta
   render EX_META_TAIL{..} = render expr <> " * " <> render meta
-  render EX_PHI_MEET{..} = "\\phiMeet{" <> maybe "" (\p -> T.pack p <> ":") prefix <> render idx <> "}{ " <> render expr <> " }"
-  render EX_PHI_AGAIN{..} = "\\phiAgain{" <> maybe "" (\p -> T.pack p <> ":") prefix <> render idx <> "}"
+  render EX_PHI_MEET{..} = "\\phiMeet{" <> maybe "" (\p -> TL.pack p <> ":") prefix <> render idx <> "}{ " <> render expr <> " }"
+  render EX_PHI_AGAIN{..} = "\\phiAgain{" <> maybe "" (\p -> TL.pack p <> ":") prefix <> render idx <> "}"
 
 instance Render [ATTRIBUTE] where
-  render attrs = T.intercalate ", " (map render attrs)
+  render attrs = TL.intercalate ", " (map render attrs)
 
 instance Render ATTRIBUTE where
   render AT_LABEL{..} = render label
@@ -206,7 +210,7 @@ instance Render BELONGING where
 
 instance Render SET where
   render ST_BINDING{..} = render binding
-  render ST_ATTRIBUTES{..} = "[ " <> T.intercalate ", " (map render attrs) <> " ]"
+  render ST_ATTRIBUTES{..} = "[ " <> TL.intercalate ", " (map render attrs) <> " ]"
 
 instance Render LOGIC_OPERATOR where
   render AND = "\\;\\text{and}\\;"
@@ -215,7 +219,7 @@ instance Render LOGIC_OPERATOR where
 instance Render NUMBER where
   render INDEX{..} = "\\indexof{ " <> render attr <> " }"
   render LENGTH{..} = "\\vert " <> render binding <> " \\vert"
-  render LITERAL{..} = T.pack (show num)
+  render LITERAL{..} = TL.pack (show num)
 
 instance Render COMPARABLE where
   render CMP_ATTR{..} = render attr
@@ -229,7 +233,7 @@ instance Render EQUAL where
 instance Render CONDITION where
   render CO_BELONGS{..} = render attr <> " " <> render belongs <> " " <> render set
   render CO_LOGIC{conditions = [cond]} = render cond
-  render CO_LOGIC{..} = T.intercalate (" " <> render operator <> " ") (map renderWrapped conditions)
+  render CO_LOGIC{..} = TL.intercalate (" " <> render operator <> " ") (map renderWrapped conditions)
     where
       renderWrapped :: CONDITION -> Text
       renderWrapped CO_LOGIC{conditions = [cond]} = render cond
@@ -238,7 +242,7 @@ instance Render CONDITION where
   render CO_NF{..} = "\\isnormal{ " <> render expr <> " }"
   render CO_NOT{..} = renderFunc "not" condition
   render CO_COMPARE{..} = render left <> " " <> render equal <> " " <> render right
-  render CO_MATCHES{..} = "matches( " <> T.pack regex <> ", " <> render expr <> " )"
+  render CO_MATCHES{..} = "matches( " <> TL.pack regex <> ", " <> render expr <> " )"
   render CO_PART_OF{..} = "part-of( " <> render expr <> ", " <> render binding <> " )"
   render CO_EMPTY = ""
 
@@ -252,6 +256,6 @@ instance Render EXTRA_ARG where
   render ARG_BYTES{..} = render bytes
 
 instance Render EXTRA where
-  render EXTRA{func = "contextualize", args = arg : rest, ..} = "$ " <> render meta <> " \\coloneqq \\ctx{ " <> render arg <> " }{ " <> T.intercalate ", " (map render rest) <> " } $"
+  render EXTRA{func = "contextualize", args = arg : rest, ..} = "$ " <> render meta <> " \\coloneqq \\ctx{ " <> render arg <> " }{ " <> TL.intercalate ", " (map render rest) <> " } $"
   render EXTRA{func = "scope", args = arg : _, ..} = "$ " <> render meta <> " \\coloneqq \\scopeof{ " <> render arg <> " } $"
-  render EXTRA{..} = "$ " <> render meta <> " \\coloneqq " <> T.pack func <> "( " <> T.intercalate ", " (map render args) <> " ) $"
+  render EXTRA{..} = "$ " <> render meta <> " \\coloneqq " <> TL.pack func <> "( " <> TL.intercalate ", " (map render args) <> " ) $"

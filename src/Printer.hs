@@ -25,6 +25,7 @@ import CST
 import Data.List (intercalate)
 import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 import Encoding
 import Lining
 import Margin (defaultMargin, withMargin)
@@ -43,19 +44,19 @@ logPrintConfig :: (SugarType, Encoding, LineFormat, Int)
 logPrintConfig = (SWEET, UNICODE, SINGLELINE, defaultMargin)
 
 printProgram' :: Program -> PrintConfig -> String
-printProgram' prog (sugar, encoding, line, margin) = T.unpack $ render (withLineFormat line $ withMargin margin $ withEncoding encoding $ withSugarType sugar $ programToCST prog)
+printProgram' prog (sugar, encoding, line, margin) = TL.unpack $ render (withLineFormat line $ withMargin margin $ withEncoding encoding $ withSugarType sugar $ programToCST prog)
 
 printProgram :: Program -> String
 printProgram prog = printProgram' prog defaultPrintConfig
 
 printExpression' :: Expression -> PrintConfig -> String
-printExpression' ex (sugar, encoding, line, margin) = T.unpack $ render (withLineFormat line $ withMargin margin $ withEncoding encoding $ withSugarType sugar $ expressionToCST ex)
+printExpression' ex (sugar, encoding, line, margin) = TL.unpack $ render (withLineFormat line $ withMargin margin $ withEncoding encoding $ withSugarType sugar $ expressionToCST ex)
 
 printExpression :: Expression -> String
 printExpression ex = printExpression' ex defaultPrintConfig
 
 printAttribute' :: Attribute -> Encoding -> String
-printAttribute' att encoding = T.unpack $ render (withEncoding encoding (toCST att (0, NO_EOL) :: ATTRIBUTE))
+printAttribute' att encoding = TL.unpack $ render (withEncoding encoding (toCST att (0, NO_EOL) :: ATTRIBUTE))
 
 printAttribute :: Attribute -> String
 printAttribute att =
@@ -69,7 +70,7 @@ printBinding :: Binding -> String
 printBinding bd = printBinding' bd defaultPrintConfig
 
 printBytes :: Bytes -> String
-printBytes bts = T.unpack $ render (toCST bts (0, NO_EOL) :: BYTES)
+printBytes bts = TL.unpack $ render (toCST bts (0, NO_EOL) :: BYTES)
 
 printExtraArg' :: ExtraArgument -> PrintConfig -> String
 printExtraArg' (ArgAttribute att) (_, encoding, _, _) = printAttribute' att encoding

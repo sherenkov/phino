@@ -8,7 +8,7 @@
 module Margin (defaultMargin, withMargin, WithMargin) where
 
 import CST
-import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 import Lining (ToSingleLine (..))
 import Render (Render (..))
 
@@ -43,7 +43,7 @@ instance WithMargin EXPRESSION where
     let single = toSingleLine ex
         main = withMargin' cfg expr
         singleMain = toSingleLine main
-        extra' = T.length (last (T.lines (render main))) + 4 -- 2 spaces + 2 braces around argument
+        extra' = fromIntegral (TL.length (last (TL.lines (render main)))) + 4 -- 2 spaces + 2 braces around argument
         arg = withMargin' (indt, margin) tau
         singleArg = toSingleLine arg
      in if
@@ -55,7 +55,7 @@ instance WithMargin EXPRESSION where
     let single = toSingleLine ex
         main = withMargin' cfg expr
         singleMain = toSingleLine main
-        extra' = T.length (last (T.lines (render main))) + 4 -- 2 spaces + 2 braces around arguments
+        extra' = fromIntegral (TL.length (last (TL.lines (render main)))) + 4 -- 2 spaces + 2 braces around arguments
         exprs = withMargin' (indt, margin) args
         singleExprs = toSingleLine exprs
      in if
@@ -67,7 +67,7 @@ instance WithMargin EXPRESSION where
     let single = toSingleLine ex
         main = withMargin' cfg expr
         singleMain = toSingleLine main
-        extra' = T.length (last (T.lines (render main))) + 4 -- 2 spaces + 2 braces around arguments
+        extra' = fromIntegral (TL.length (last (TL.lines (render main)))) + 4 -- 2 spaces + 2 braces around arguments
         taus' = withMargin' (indt, margin) taus
         singleTaus = toSingleLine taus'
      in if
@@ -119,4 +119,4 @@ instance WithMargin EXTRA where
   withMargin' _ = id
 
 lengthOf :: Render a => a -> Int
-lengthOf renderable = T.length (render renderable)
+lengthOf renderable = fromIntegral (TL.length (render renderable))

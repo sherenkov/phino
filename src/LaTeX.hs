@@ -25,6 +25,7 @@ import CST
 import Data.List (intercalate, nub)
 import Data.Maybe (isJust)
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 import Encoding
 import Lining
 import Locator (locatedExpression)
@@ -126,7 +127,7 @@ meetInPrograms prog LatexContext{..} = meetInPrograms' prog 1
     popularity = toDouble _meetPopularity / 100.0
 
 renderToLatex :: (ToSalty a, ToASCII a, ToSingleLine a, ToLaTeX a, WithMargin a, Render a) => a -> LatexContext -> String
-renderToLatex renderable LatexContext{..} = T.unpack $ render (toLaTeX $ withLineFormat _line $ withMargin _margin $ withEncoding ASCII $ withSugarType _sugar renderable)
+renderToLatex renderable LatexContext{..} = TL.unpack $ render (toLaTeX $ withLineFormat _line $ withMargin _margin $ withEncoding ASCII $ withSugarType _sugar renderable)
 
 phiquation :: LatexContext -> String
 phiquation LatexContext{_nonumber = True} = "phiquation*"
